@@ -1,6 +1,7 @@
-import pytest
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 

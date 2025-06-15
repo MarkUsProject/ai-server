@@ -1,10 +1,11 @@
-import pytest
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 
-from ai_server.server import resolve_model_path, is_llamacpp_available, chat_with_ollama
+from ai_server.server import chat_with_ollama, is_llamacpp_available, resolve_model_path
 
 # Test models
 TEST_LLAMACPP_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'

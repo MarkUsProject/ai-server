@@ -1,11 +1,12 @@
-from flask import Flask, request, jsonify, abort
-import ollama
-import subprocess
-import os
-import requests
-from typing import Optional
-from dotenv import load_dotenv
 import glob
+import os
+import subprocess
+from typing import Optional
+
+import ollama
+import requests
+from dotenv import load_dotenv
+from flask import Flask, abort, jsonify, request
 
 from .redis_helper import REDIS_CONNECTION
 

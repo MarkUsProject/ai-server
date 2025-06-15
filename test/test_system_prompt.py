@@ -1,5 +1,6 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 TEST_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'
 TEST_SYSTEM_PROMPT = "You are a helpful coding assistant."

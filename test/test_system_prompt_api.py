@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 TEST_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'
 TEST_SYSTEM_PROMPT = "You are a helpful coding assistant."
