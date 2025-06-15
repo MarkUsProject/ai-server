@@ -35,3 +35,7 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/MarkUsProject/ai-server"
 Issues = "https://github.com/MarkUsProject/ai-server/issues"
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
