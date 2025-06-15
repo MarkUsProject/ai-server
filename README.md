@@ -13,3 +13,9 @@ To install pre-commit hooks:
 ```console
 $ pre-commit install
 ```
+
+To run the test suite:
+
+```console
+$ pytest
+```
