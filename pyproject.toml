@@ -26,6 +26,11 @@ dependencies = [
     "requests",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "pytest",
+]
 
 [project.urls]
 Homepage = "https://github.com/MarkUsProject/ai-server"
