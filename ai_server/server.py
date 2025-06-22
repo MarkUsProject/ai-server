@@ -47,7 +47,11 @@ def _build_messages(content: str, system_prompt: Optional[str] = None, image_fil
 
 
 def chat_with_llama_server_http(
-    model: str, content: str, system_prompt: Optional[str] = None, timeout: int = 300, image_files: Optional[list] = None
+    model: str,
+    content: str,
+    system_prompt: Optional[str] = None,
+    timeout: int = 300,
+    image_files: Optional[list] = None,
 ) -> str:
     """Handle chat using llama-server HTTP API."""
     if not LLAMA_SERVER_URL:
@@ -90,7 +94,9 @@ def is_llamacpp_available(model: str) -> bool:
     return resolve_model_path(model) is not None
 
 
-def chat_with_ollama(model: str, content: str, system_prompt: Optional[str] = None, image_files: Optional[list] = None) -> str:
+def chat_with_ollama(
+    model: str, content: str, system_prompt: Optional[str] = None, image_files: Optional[list] = None
+) -> str:
     """Handle chat using ollama."""
     messages = _build_messages(content, system_prompt, image_files)
 
@@ -98,7 +104,13 @@ def chat_with_ollama(model: str, content: str, system_prompt: Optional[str] = No
     return response.message.content
 
 
-def chat_with_llamacpp(model: str, content: str, system_prompt: Optional[str] = None, timeout: int = 300, image_files: Optional[list] = None) -> str:
+def chat_with_llamacpp(
+    model: str,
+    content: str,
+    system_prompt: Optional[str] = None,
+    timeout: int = 300,
+    image_files: Optional[list] = None,
+) -> str:
     """Handle chat using llama.cpp CLI."""
     model_path = resolve_model_path(model)
 
@@ -134,7 +146,13 @@ def chat_with_llamacpp(model: str, content: str, system_prompt: Optional[str] = 
         raise Exception("Llama.cpp CLI not found")
 
 
-def chat_with_model(model: str, content: str, llama_mode: str = "cli", system_prompt: Optional[str] = None, image_files: Optional[list] = None) -> str:
+def chat_with_model(
+    model: str,
+    content: str,
+    llama_mode: str = "cli",
+    system_prompt: Optional[str] = None,
+    image_files: Optional[list] = None,
+) -> str:
     """Route chat request based on llama_mode: server (external), cli, or ollama fallback; and with optional system prompt."""
     if is_llamacpp_available(model):
         if llama_mode == "server":
