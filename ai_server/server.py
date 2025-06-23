@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import base64
 import glob
 import os
 import subprocess
@@ -31,24 +34,31 @@ LLAMA_SERVER_URL = (
 )
 
 
-def _build_messages(content: str, system_prompt: Optional[str] = None) -> list:
+def _build_messages(content: str, system_prompt: Optional[str] = None, image_files: Optional[list] = None) -> list:
     """Build messages list with optional system prompt."""
     messages = []
     if system_prompt:
         messages.append({'role': 'system', 'content': system_prompt})
     messages.append({'role': 'user', 'content': content})
+
+    if image_files:
+        messages[-1]["images"] = [base64.b64encode(image_file.read()).decode("utf-8") for image_file in image_files]
     return messages
 
 
 def chat_with_llama_server_http(
-    model: str, content: str, system_prompt: Optional[str] = None, timeout: int = 300
+    model: str,
+    content: str,
+    system_prompt: Optional[str] = None,
+    timeout: int = 300,
+    image_files: Optional[list] = None,
 ) -> str:
     """Handle chat using llama-server HTTP API."""
     if not LLAMA_SERVER_URL:
         raise Exception("LLAMA_SERVER_URL environment variable not set")
 
     try:
-        messages = _build_messages(content, system_prompt)
+        messages = _build_messages(content, system_prompt, image_files=[])  # TODO: Pass image files
 
         response = requests.post(
             f'{LLAMA_SERVER_URL}/v1/chat/completions',
@@ -84,15 +94,23 @@ def is_llamacpp_available(model: str) -> bool:
     return resolve_model_path(model) is not None
 
 
-def chat_with_ollama(model: str, content: str, system_prompt: Optional[str] = None) -> str:
+def chat_with_ollama(
+    model: str, content: str, system_prompt: Optional[str] = None, image_files: Optional[list] = None
+) -> str:
     """Handle chat using ollama."""
-    messages = _build_messages(content, system_prompt)
+    messages = _build_messages(content, system_prompt, image_files)
 
     response = ollama.chat(model=model, messages=messages, stream=False)
     return response.message.content
 
 
-def chat_with_llamacpp(model: str, content: str, system_prompt: Optional[str] = None, timeout: int = 300) -> str:
+def chat_with_llamacpp(
+    model: str,
+    content: str,
+    system_prompt: Optional[str] = None,
+    timeout: int = 300,
+    image_files: Optional[list] = None,
+) -> str:
     """Handle chat using llama.cpp CLI."""
     model_path = resolve_model_path(model)
 
@@ -104,6 +122,9 @@ def chat_with_llamacpp(model: str, content: str, system_prompt: Optional[str] = 
     # Add system prompt if provided
     if system_prompt:
         cmd.extend(['--system-prompt', system_prompt])
+
+    if image_files:
+        pass  # TODO: pass image files
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=False, timeout=timeout, check=True)
@@ -125,20 +146,26 @@ def chat_with_llamacpp(model: str, content: str, system_prompt: Optional[str] = 
         raise Exception("Llama.cpp CLI not found")
 
 
-def chat_with_model(model: str, content: str, llama_mode: str = "cli", system_prompt: Optional[str] = None) -> str:
+def chat_with_model(
+    model: str,
+    content: str,
+    llama_mode: str = "cli",
+    system_prompt: Optional[str] = None,
+    image_files: Optional[list] = None,
+) -> str:
     """Route chat request based on llama_mode: server (external), cli, or ollama fallback; and with optional system prompt."""
     if is_llamacpp_available(model):
         if llama_mode == "server":
             if not LLAMA_SERVER_URL:
                 raise Exception("LLAMA_SERVER_URL environment variable not set for server mode")
-            return chat_with_llama_server_http(model, content, system_prompt)
+            return chat_with_llama_server_http(model, content, system_prompt, image_files)
         elif llama_mode == "cli":
-            return chat_with_llamacpp(model, content, system_prompt)
+            return chat_with_llamacpp(model, content, system_prompt, image_files)
         else:
             raise ValueError(f"Invalid llama_mode: '{llama_mode}'. Valid options are 'server' or 'cli'.")
     else:
         # Model not available in llama.cpp, use ollama
-        return chat_with_ollama(model, content, system_prompt)
+        return chat_with_ollama(model, content, system_prompt, image_files)
 
 
 def authenticate() -> str:
@@ -158,16 +185,16 @@ def authenticate() -> str:
 def chat():
     """Handle chat request with optional llama_mode and system prompt parameters."""
     authenticate()
-    params = request.get_json()
-    model = params.get('model', DEFAULT_MODEL)
-    content = params.get('content', '')
-    llama_mode = params.get('llama_mode', 'cli')
-    system_prompt = params.get('system_prompt')
+    model = request.form.get('model', DEFAULT_MODEL)
+    content = request.form.get('content', '')
+    llama_mode = request.form.get('llama_mode', 'cli')
+    system_prompt = request.form.get('system_prompt')
+    image_files = list(request.files.values())
 
     if not content.strip():
         abort(400, description='Missing prompt content')
 
-    response_content = chat_with_model(model, content, llama_mode, system_prompt)
+    response_content = chat_with_model(model, content, llama_mode, system_prompt, image_files)
     return jsonify(response_content)
 
 

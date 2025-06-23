@@ -34,12 +34,12 @@ class TestSystemPromptAPI:
         response = client.post(
             '/chat',
             headers={'X-API-KEY': 'test-key'},
-            json={'model': TEST_MODEL, 'content': TEST_USER_CONTENT, 'system_prompt': TEST_SYSTEM_PROMPT},
+            data={'model': TEST_MODEL, 'content': TEST_USER_CONTENT, 'system_prompt': TEST_SYSTEM_PROMPT},
         )
 
         assert response.status_code == 200
 
-        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT)
+        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT, [])
 
     @patch('ai_server.server.REDIS_CONNECTION')
     @patch('ai_server.server.chat_with_model')
@@ -49,12 +49,12 @@ class TestSystemPromptAPI:
         mock_chat.return_value = "def function(): pass"
 
         response = client.post(
-            '/chat', headers={'X-API-KEY': 'test-key'}, json={'model': TEST_MODEL, 'content': TEST_USER_CONTENT}
+            '/chat', headers={'X-API-KEY': 'test-key'}, data={'model': TEST_MODEL, 'content': TEST_USER_CONTENT}
         )
 
         assert response.status_code == 200
 
-        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', None)
+        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', None, [])
 
     @patch('ai_server.server.REDIS_CONNECTION')
     def test_api_authentication_still_required(self, mock_redis, client):
@@ -64,7 +64,7 @@ class TestSystemPromptAPI:
         response = client.post(
             '/chat',
             headers={'X-API-KEY': 'invalid-key'},
-            json={'model': TEST_MODEL, 'content': TEST_USER_CONTENT, 'system_prompt': TEST_SYSTEM_PROMPT},
+            data={'model': TEST_MODEL, 'content': TEST_USER_CONTENT, 'system_prompt': TEST_SYSTEM_PROMPT},
         )
 
         assert response.status_code == 500
