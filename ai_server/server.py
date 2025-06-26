@@ -158,14 +158,14 @@ def chat_with_model(
         if llama_mode == "server":
             if not LLAMA_SERVER_URL:
                 raise Exception("LLAMA_SERVER_URL environment variable not set for server mode")
-            return chat_with_llama_server_http(model, content, system_prompt, image_files)
+            return chat_with_llama_server_http(model, content, system_prompt=system_prompt, image_files=image_files)
         elif llama_mode == "cli":
-            return chat_with_llamacpp(model, content, system_prompt, image_files)
+            return chat_with_llamacpp(model, content, system_prompt=system_prompt, image_files=image_files)
         else:
             raise ValueError(f"Invalid llama_mode: '{llama_mode}'. Valid options are 'server' or 'cli'.")
     else:
         # Model not available in llama.cpp, use ollama
-        return chat_with_ollama(model, content, system_prompt, image_files)
+        return chat_with_ollama(model, content, system_prompt=system_prompt, image_files=image_files)
 
 
 def authenticate() -> str:
