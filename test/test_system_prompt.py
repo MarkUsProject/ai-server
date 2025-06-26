@@ -77,4 +77,4 @@ class TestSystemPromptCore:
         mock_chat.return_value = "result"
 
         chat_with_model(TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT)
-        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, TEST_SYSTEM_PROMPT, image_files=None)
+        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, system_prompt=TEST_SYSTEM_PROMPT, image_files=None)
