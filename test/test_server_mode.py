@@ -111,7 +111,7 @@ class TestServerModeRouting:
 
         assert result == "Server response from DeepSeek V3"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
-        self.mock_chat_server.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Explain code', None, None)
+        self.mock_chat_server.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Explain code', system_prompt=None, image_files=None)
 
     def test_server_mode_fallback_to_ollama_when_unavailable(self):
         """Test server mode falls back to ollama when model not available in llama.cpp."""
@@ -122,7 +122,7 @@ class TestServerModeRouting:
 
         assert result == "Ollama fallback response"
         self.mock_available.assert_called_once_with(TEST_OLLAMA_MODEL)
-        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Debug code', None, None)
+        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Debug code', system_prompt=None, image_files=None)
 
     def test_server_mode_requires_server_url(self):
         """Test server mode requires LLAMA_SERVER_URL to be set."""
