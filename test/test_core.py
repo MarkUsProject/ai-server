@@ -83,7 +83,7 @@ class TestOllamaCore:
             model=TEST_OLLAMA_MODEL,
             messages=[{'role': 'user', 'content': 'Help me write a Python function'}],
             stream=False,
-            format=None
+            format=None,
         )
 
     def test_chat_with_ollama_service_unavailable(self, mock_ollama):
@@ -103,18 +103,14 @@ class TestOllamaCore:
     def test_chat_with_ollama_with_json_schema(self, mock_ollama, tmp_path):
         """Ollama chat should forward the JSON schema (format=…) when provided."""
         # Fake schema file
-        test_schema = {"schema": {"type":"object","properties":{"answer":{"type":"string"}}}}
+        test_schema = {"schema": {"type": "object", "properties": {"answer": {"type": "string"}}}}
 
         # Mock ollama response
         mock_response = MagicMock()
         mock_response.message.content = "42"
         mock_ollama.return_value = mock_response
 
-        result = chat_with_ollama(
-            TEST_OLLAMA_MODEL,
-            "What is the meaning of life?",
-            json_schema=test_schema
-        )
+        result = chat_with_ollama(TEST_OLLAMA_MODEL, "What is the meaning of life?", json_schema=test_schema)
 
         assert result == "42"
         mock_ollama.assert_called_once_with(
