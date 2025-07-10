@@ -35,6 +35,7 @@ LLAMA_SERVER_URL = (
 )
 SCHEMA_KEY = "schema"
 
+
 def _build_messages(content: str, system_prompt: Optional[str] = None, image_files: Optional[list] = None) -> list:
     """Build messages list with optional system prompt."""
     messages = []
