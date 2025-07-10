@@ -113,7 +113,7 @@ def chat_with_ollama(
         model=model,
         messages=messages,
         stream=False,
-        format=json_schema['schema'] if json_schema else None,
+        format=json_schema[SCHEMA_KEY] if json_schema else None,
     )
     return response.message.content
 
