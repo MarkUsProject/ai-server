@@ -203,11 +203,8 @@ def chat():
     image_files = list(request.files.values())
     json_schema = request.form.get('json_schema')
     if json_schema:
-        try:
-            raw_json = json.loads(json_schema)
-        except Exception as e:
-            raise ValueError(f"Invalid JSON schema: {e} schema: {json_schema}")
-        json_schema = raw_json
+            json_schema = json.loads(json_schema)
+
     if not content.strip():
         abort(400, description='Missing prompt content')
 
