@@ -108,7 +108,7 @@ class TestCLIModeRouting:
 
         assert result == "CLI response from DeepSeek V3"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
-        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Write a function', system_prompt=None, image_files=None)
+        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Write a function', system_prompt=None, image_files=None, json_schema=None)
 
     def test_cli_mode_fallback_to_ollama_when_unavailable(self):
         """Test CLI mode falls back to ollama when model not available in llama.cpp."""
@@ -119,7 +119,7 @@ class TestCLIModeRouting:
 
         assert result == "Ollama response from DeepSeek Coder"
         self.mock_available.assert_called_once_with(TEST_OLLAMA_MODEL)
-        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Help with coding', system_prompt=None, image_files=None)
+        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Help with coding', system_prompt=None, image_files=None, json_schema=None)
 
     def test_default_mode_is_cli(self):
         """Test that default mode is CLI when no llama_mode specified."""
@@ -130,7 +130,7 @@ class TestCLIModeRouting:
 
         assert result == "Default CLI mode response"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
-        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None)
+        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None, json_schema=None)
 
 
 class TestCLIModeIntegration:
@@ -167,3 +167,32 @@ class TestCLIModeIntegration:
         assert result == "Ollama CLI fallback integration test successful!"
         mock_glob.assert_called_once_with(f'/data1/GGUF/{TEST_OLLAMA_MODEL}/*.gguf')
         mock_ollama.assert_called_once()
+
+    def test_cli_mode_passes_json_schema_to_ollama(self, tmp_path):
+        """
+        When json_schema is supplied, chat_with_model should forward the parsed
+        schema (as a dict) to chat_with_ollama.
+        """
+        test_schema = {"schema": {"type":"object","properties":{"answer":{"type":"string"}}}}
+
+        #  Prepare mocks
+        with patch('ai_server.server.is_llamacpp_available', return_value=False), \
+             patch('ai_server.server.chat_with_ollama') as mock_ollama:
+            mock_ollama.return_value = "schema-aware response"
+
+            result = chat_with_model(
+                TEST_OLLAMA_MODEL,
+                "Give me an answer",
+                llama_mode='cli',
+                json_schema=test_schema
+            )
+
+            assert result == "schema-aware response"
+
+            mock_ollama.assert_called_once_with(
+                TEST_OLLAMA_MODEL,
+                "Give me an answer",
+                system_prompt=None,
+                image_files=None,
+                json_schema=test_schema
+            )

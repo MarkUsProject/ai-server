@@ -111,7 +111,7 @@ class TestServerModeRouting:
 
         assert result == "Server response from DeepSeek V3"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
-        self.mock_chat_server.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Explain code', system_prompt=None, image_files=None)
+        self.mock_chat_server.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Explain code', system_prompt=None, image_files=None, json_schema=None)
 
     def test_server_mode_fallback_to_ollama_when_unavailable(self):
         """Test server mode falls back to ollama when model not available in llama.cpp."""
@@ -122,7 +122,7 @@ class TestServerModeRouting:
 
         assert result == "Ollama fallback response"
         self.mock_available.assert_called_once_with(TEST_OLLAMA_MODEL)
-        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Debug code', system_prompt=None, image_files=None)
+        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Debug code', system_prompt=None, image_files=None, json_schema=None)
 
     def test_server_mode_requires_server_url(self):
         """Test server mode requires LLAMA_SERVER_URL to be set."""
@@ -178,3 +178,39 @@ class TestServerModeIntegration:
         assert result == "Ollama server fallback integration test successful!"
         mock_glob.assert_called_once_with(f'/data1/GGUF/{TEST_OLLAMA_MODEL}/*.gguf')
         mock_ollama.assert_called_once()
+
+    def test_server_mode_passes_json_schema_to_llama_server(self, tmp_path, mock_requests_post, mock_llama_server_url):
+        """
+        chat_with_model (server mode) should forward a json_schema file path
+        and llama-server should receive the parsed schema in its JSON body.
+        """
+        test_schema = {"schema": {"type":"object","properties":{"answer":{"type":"string"}}}}
+
+        with patch('ai_server.server.is_llamacpp_available', return_value=True):
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "choices": [{"message": {"content": "Schema-aware server reply"}}]
+            }
+            mock_requests_post.return_value = mock_response
+
+            result = chat_with_model(
+                TEST_LLAMACPP_MODEL,
+                "Give me an answer",
+                llama_mode="server",
+                json_schema=test_schema
+            )
+
+            assert result == "Schema-aware server reply"
+
+            # Verify POST call
+            mock_requests_post.assert_called_once()
+            args, kwargs = mock_requests_post.call_args
+            assert args[0] == "http://localhost:8080/v1/chat/completions"
+
+            body = kwargs["json"]
+            print(body)
+            assert body["model"] == TEST_LLAMACPP_MODEL
+            assert body["messages"][0]["content"] == "Give me an answer"
+            assert body["json_schema"] == {"type": "object", "properties": {"answer": {"type": "string"}}}
+
