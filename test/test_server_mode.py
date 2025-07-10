@@ -208,7 +208,6 @@ class TestServerModeIntegration:
             assert args[0] == "http://localhost:8080/v1/chat/completions"
 
             body = kwargs["json"]
-            print(body)
             assert body["model"] == TEST_LLAMACPP_MODEL
             assert body["messages"][0]["content"] == "Give me an answer"
             assert body["json_schema"] == {"type": "object", "properties": {"answer": {"type": "string"}}}
