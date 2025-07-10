@@ -33,7 +33,7 @@ LLAMA_SERVER_URL = (
     if _llama_server_url and not _llama_server_url.startswith(('http://', 'https://'))
     else _llama_server_url
 )
-
+SCHEMA_KEY = "schema"
 
 def _build_messages(content: str, system_prompt: Optional[str] = None, image_files: Optional[list] = None) -> list:
     """Build messages list with optional system prompt."""
@@ -63,7 +63,7 @@ def chat_with_llama_server_http(
         messages = _build_messages(content, system_prompt, image_files=[])  # TODO: Pass image files
         payload = {'model': model, 'messages': messages, 'stream': False, 'max_tokens': 512}
         if json_schema:
-            payload['json_schema'] = json_schema["schema"]
+            payload['json_schema'] = json_schema[SCHEMA_KEY]
 
         response = requests.post(
             f'{LLAMA_SERVER_URL}/v1/chat/completions',
@@ -134,7 +134,7 @@ def chat_with_llamacpp(
 
     cmd = [LLAMA_CPP_CLI, '-m', model_path, '--n-gpu-layers', '40', '-p', content, '-n', '512', '--single-turn']
     if json_schema:
-        raw_schema = json_schema["schema"] if "schema" in json_schema else json_schema
+        raw_schema = json_schema[SCHEMA_KEY] if SCHEMA_KEY in json_schema else json_schema
         cmd += ["--json-schema", json.dumps(raw_schema)]
 
     # Add system prompt if provided
