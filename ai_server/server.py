@@ -202,8 +202,10 @@ def chat():
     system_prompt = request.form.get('system_prompt')
     image_files = list(request.files.values())
     json_schema = request.form.get('json_schema')
-    if json_schema:
+    if json_schema and json_schema != "":
         json_schema = json.loads(json_schema)
+    else:
+        json_schema = None
 
     if not content.strip():
         abort(400, description='Missing prompt content')
