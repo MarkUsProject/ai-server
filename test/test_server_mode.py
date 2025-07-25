@@ -112,7 +112,12 @@ class TestServerModeRouting:
         assert result == "Server response from DeepSeek V3"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
         self.mock_chat_server.assert_called_once_with(
-            TEST_LLAMACPP_MODEL, 'Explain code', system_prompt=None, image_files=None, json_schema=None, model_options=None
+            TEST_LLAMACPP_MODEL,
+            'Explain code',
+            system_prompt=None,
+            image_files=None,
+            json_schema=None,
+            model_options=None,
         )
 
     def test_server_mode_fallback_to_ollama_when_unavailable(self):
@@ -127,7 +132,9 @@ class TestServerModeRouting:
         self.mock_chat_ollama.assert_called_once_with(
             TEST_OLLAMA_MODEL, 'Debug code', system_prompt=None, image_files=None, json_schema=None, model_options=None
         )
-        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Debug code', system_prompt=None, image_files=None, json_schema=None, model_options=None)
+        self.mock_chat_ollama.assert_called_once_with(
+            TEST_OLLAMA_MODEL, 'Debug code', system_prompt=None, image_files=None, json_schema=None, model_options=None
+        )
 
     def test_server_mode_fallback_to_ollama_with_model_options(self):
         """Test server mode falls back to ollama and passes model_options correctly when model is unavailable in llama.cpp."""
@@ -136,12 +143,7 @@ class TestServerModeRouting:
 
         test_options = {"temperature": 0.3, "top_k": 50}
 
-        result = chat_with_model(
-            TEST_OLLAMA_MODEL,
-            'Debug code',
-            llama_mode='server',
-            model_options=test_options
-        )
+        result = chat_with_model(TEST_OLLAMA_MODEL, 'Debug code', llama_mode='server', model_options=test_options)
 
         assert result == "Ollama fallback response"
         self.mock_available.assert_called_once_with(TEST_OLLAMA_MODEL)
@@ -151,7 +153,7 @@ class TestServerModeRouting:
             system_prompt=None,
             image_files=None,
             model_options=test_options,
-            json_schema=None
+            json_schema=None,
         )
 
     def test_server_mode_requires_server_url(self):

@@ -111,7 +111,9 @@ class TestOllamaCore:
         mock_response.message.content = "42"
         mock_ollama.return_value = mock_response
 
-        result = chat_with_ollama(TEST_OLLAMA_MODEL, "What is the meaning of life?", json_schema=test_schema, model_options=None)
+        result = chat_with_ollama(
+            TEST_OLLAMA_MODEL, "What is the meaning of life?", json_schema=test_schema, model_options=None
+        )
 
         assert result == "42"
         mock_ollama.assert_called_once_with(
@@ -119,5 +121,5 @@ class TestOllamaCore:
             messages=[{"role": "user", "content": "What is the meaning of life?"}],
             stream=False,
             format={'type': 'object', 'properties': {'answer': {'type': 'string'}}},
-            options=None
+            options=None,
         )
