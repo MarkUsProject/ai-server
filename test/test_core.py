@@ -83,7 +83,8 @@ class TestOllamaCore:
             model=TEST_OLLAMA_MODEL,
             messages=[{'role': 'user', 'content': 'Help me write a Python function'}],
             stream=False,
-            options=None
+            options=None,
+            format=None,
         )
 
     def test_chat_with_ollama_service_unavailable(self, mock_ollama):
@@ -99,3 +100,24 @@ class TestOllamaCore:
 
         with pytest.raises(Exception, match="model 'nonexistent:latest' not found"):
             chat_with_ollama('nonexistent:latest', 'Hello')
+
+    def test_chat_with_ollama_with_json_schema(self, mock_ollama, tmp_path):
+        """Ollama chat should forward the JSON schema (format=…) when provided."""
+        # Fake schema file
+        test_schema = {"schema": {"type": "object", "properties": {"answer": {"type": "string"}}}}
+
+        # Mock ollama response
+        mock_response = MagicMock()
+        mock_response.message.content = "42"
+        mock_ollama.return_value = mock_response
+
+        result = chat_with_ollama(TEST_OLLAMA_MODEL, "What is the meaning of life?", json_schema=test_schema, model_options=None)
+
+        assert result == "42"
+        mock_ollama.assert_called_once_with(
+            model=TEST_OLLAMA_MODEL,
+            messages=[{"role": "user", "content": "What is the meaning of life?"}],
+            stream=False,
+            format={'type': 'object', 'properties': {'answer': {'type': 'string'}}},
+            options=None
+        )

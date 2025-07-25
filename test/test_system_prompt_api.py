@@ -40,7 +40,7 @@ class TestSystemPromptAPI:
 
         assert response.status_code == 200
 
-        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT, [], None)
+        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT, [], json_schema=None, model_options=None)
 
     @patch('ai_server.server.REDIS_CONNECTION')
     @patch('ai_server.server.chat_with_model')
@@ -55,7 +55,7 @@ class TestSystemPromptAPI:
 
         assert response.status_code == 200
 
-        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', None, [], None)
+        mock_chat.assert_called_once_with(TEST_MODEL, TEST_USER_CONTENT, 'cli', None, [], model_options=None, json_schema=None)
 
     @patch('ai_server.server.REDIS_CONNECTION')
     def test_api_authentication_still_required(self, mock_redis, client):
