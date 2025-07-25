@@ -108,7 +108,7 @@ class TestCLIModeRouting:
 
         assert result == "CLI response from DeepSeek V3"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
-        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Write a function', system_prompt=None, image_files=None)
+        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Write a function', system_prompt=None, image_files=None, model_options=None)
 
     def test_cli_mode_fallback_to_ollama_when_unavailable(self):
         """Test CLI mode falls back to ollama when model not available in llama.cpp."""
@@ -119,7 +119,7 @@ class TestCLIModeRouting:
 
         assert result == "Ollama response from DeepSeek Coder"
         self.mock_available.assert_called_once_with(TEST_OLLAMA_MODEL)
-        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Help with coding', system_prompt=None, image_files=None)
+        self.mock_chat_ollama.assert_called_once_with(TEST_OLLAMA_MODEL, 'Help with coding', system_prompt=None, image_files=None, model_options=None)
 
     def test_default_mode_is_cli(self):
         """Test that default mode is CLI when no llama_mode specified."""
@@ -130,7 +130,26 @@ class TestCLIModeRouting:
 
         assert result == "Default CLI mode response"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
-        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None)
+        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None, model_options=None)
+
+    def test_model_options(self):
+        """Test that model_options are passed correctly in CLI mode."""
+        self.mock_available.return_value = True
+        self.mock_chat_llamacpp.return_value = "Model options test response"
+
+        test_options = {"temperature": 0.7, "top_p": 0.9}
+
+        result = chat_with_model(TEST_LLAMACPP_MODEL, 'Help me', model_options=test_options)
+
+        assert result == "Model options test response"
+        self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
+        self.mock_chat_llamacpp.assert_called_once_with(
+            TEST_LLAMACPP_MODEL,
+            'Help me',
+            system_prompt=None,
+            image_files=None,
+            model_options=test_options
+        )
 
 
 class TestCLIModeIntegration:

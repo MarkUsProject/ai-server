@@ -83,6 +83,7 @@ class TestOllamaCore:
             model=TEST_OLLAMA_MODEL,
             messages=[{'role': 'user', 'content': 'Help me write a Python function'}],
             stream=False,
+            options=None
         )
 
     def test_chat_with_ollama_service_unavailable(self, mock_ollama):
