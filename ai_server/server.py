@@ -70,6 +70,8 @@ def chat_with_llama_server_http(
         payload = {'model': model, 'messages': messages, **model_options}
         if json_schema:
             payload['json_schema'] = json_schema[SCHEMA_KEY]
+        if 'stream' not in payload:
+            payload['stream'] = False
 
         response = requests.post(
             f'{LLAMA_SERVER_URL}/v1/chat/completions',
@@ -123,7 +125,6 @@ def chat_with_ollama(
         format=json_schema[SCHEMA_KEY] if json_schema else None,
         options=model_options
     )
-
     return response.message.content
 
 
