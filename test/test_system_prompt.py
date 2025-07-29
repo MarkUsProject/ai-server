@@ -78,5 +78,10 @@ class TestSystemPromptCore:
 
         chat_with_model(TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT)
         mock_chat.assert_called_once_with(
-            TEST_MODEL, TEST_USER_CONTENT, system_prompt=TEST_SYSTEM_PROMPT, image_files=None, json_schema=None
+            TEST_MODEL,
+            TEST_USER_CONTENT,
+            system_prompt=TEST_SYSTEM_PROMPT,
+            image_files=None,
+            json_schema=None,
+            model_options=None,
         )
