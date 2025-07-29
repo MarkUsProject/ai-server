@@ -109,7 +109,12 @@ class TestCLIModeRouting:
         assert result == "CLI response from DeepSeek V3"
         self.mock_available.assert_called_once_with(TEST_LLAMACPP_MODEL)
         self.mock_chat_llamacpp.assert_called_once_with(
-            TEST_LLAMACPP_MODEL, 'Write a function', system_prompt=None, image_files=None, json_schema=None, model_options=None
+            TEST_LLAMACPP_MODEL,
+            'Write a function',
+            system_prompt=None,
+            image_files=None,
+            json_schema=None,
+            model_options=None,
         )
 
     def test_cli_mode_fallback_to_ollama_when_unavailable(self):
@@ -122,7 +127,12 @@ class TestCLIModeRouting:
         assert result == "Ollama response from DeepSeek Coder"
         self.mock_available.assert_called_once_with(TEST_OLLAMA_MODEL)
         self.mock_chat_ollama.assert_called_once_with(
-            TEST_OLLAMA_MODEL, 'Help with coding', system_prompt=None, image_files=None, json_schema=None, model_options=None
+            TEST_OLLAMA_MODEL,
+            'Help with coding',
+            system_prompt=None,
+            image_files=None,
+            json_schema=None,
+            model_options=None,
         )
 
     def test_default_mode_is_cli(self):
@@ -137,7 +147,9 @@ class TestCLIModeRouting:
         self.mock_chat_llamacpp.assert_called_once_with(
             TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None, json_schema=None, model_options=None
         )
-        self.mock_chat_llamacpp.assert_called_once_with(TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None, model_options=None, json_schema=None)
+        self.mock_chat_llamacpp.assert_called_once_with(
+            TEST_LLAMACPP_MODEL, 'Help me', system_prompt=None, image_files=None, model_options=None, json_schema=None
+        )
 
     def test_model_options(self):
         """Test that model_options are passed correctly in CLI mode."""
@@ -156,7 +168,7 @@ class TestCLIModeRouting:
             system_prompt=None,
             image_files=None,
             json_schema=None,
-            model_options=test_options
+            model_options=test_options,
         )
 
 
@@ -213,5 +225,10 @@ class TestCLIModeIntegration:
             assert result == "schema-aware response"
 
             mock_ollama.assert_called_once_with(
-                TEST_OLLAMA_MODEL, "Give me an answer", system_prompt=None, image_files=None, json_schema=test_schema, model_options=None
+                TEST_OLLAMA_MODEL,
+                "Give me an answer",
+                system_prompt=None,
+                image_files=None,
+                json_schema=test_schema,
+                model_options=None,
             )

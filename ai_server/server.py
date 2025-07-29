@@ -113,7 +113,7 @@ def chat_with_ollama(
     system_prompt: Optional[str] = None,
     image_files: Optional[list] = None,
     json_schema: Optional[dict] = None,
-    model_options: Optional[dict] = None
+    model_options: Optional[dict] = None,
 ) -> str:
     """Handle chat using ollama."""
     messages = _build_messages(content, system_prompt, image_files)
@@ -123,7 +123,7 @@ def chat_with_ollama(
         messages=messages,
         stream=False,
         format=json_schema[SCHEMA_KEY] if json_schema else None,
-        options=model_options
+        options=model_options,
     )
     return response.message.content
 
@@ -194,18 +194,33 @@ def chat_with_model(
             if not LLAMA_SERVER_URL:
                 raise Exception("LLAMA_SERVER_URL environment variable not set for server mode")
             return chat_with_llama_server_http(
-                model, content, system_prompt=system_prompt, image_files=image_files, json_schema=json_schema, model_options=model_options
+                model,
+                content,
+                system_prompt=system_prompt,
+                image_files=image_files,
+                json_schema=json_schema,
+                model_options=model_options,
             )
         elif llama_mode == "cli":
             return chat_with_llamacpp(
-                model, content, system_prompt=system_prompt, image_files=image_files, json_schema=json_schema, model_options=model_options
+                model,
+                content,
+                system_prompt=system_prompt,
+                image_files=image_files,
+                json_schema=json_schema,
+                model_options=model_options,
             )
         else:
             raise ValueError(f"Invalid llama_mode: '{llama_mode}'. Valid options are 'server' or 'cli'.")
     else:
         # Model not available in llama.cpp, use ollama
         return chat_with_ollama(
-            model, content, system_prompt=system_prompt, image_files=image_files, json_schema=json_schema, model_options=model_options
+            model,
+            content,
+            system_prompt=system_prompt,
+            image_files=image_files,
+            json_schema=json_schema,
+            model_options=model_options,
         )
 
 
@@ -239,7 +254,9 @@ def chat():
     if not content.strip():
         abort(400, description='Missing prompt content')
 
-    response_content = chat_with_model(model, content, llama_mode, system_prompt, image_files, model_options=model_options, json_schema=json_schema)
+    response_content = chat_with_model(
+        model, content, llama_mode, system_prompt, image_files, model_options=model_options, json_schema=json_schema
+    )
     return jsonify(response_content)
 
 
