@@ -12,6 +12,12 @@ import ollama
 import requests
 from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, request
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from .redis_helper import REDIS_CONNECTION
 
@@ -22,7 +28,22 @@ logger = logging.getLogger('ai-server')
 # Load environment variables from .env file
 load_dotenv()
 
+# Configure OpenTelemetry
+resource = Resource.create({"service.name": "ai-server"})
+tracer_provider = TracerProvider(resource=resource)
+
+# Configure OTLP exporter to send to collector at localhost:4317
+otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
+span_processor = BatchSpanProcessor(otlp_exporter)
+tracer_provider.add_span_processor(span_processor)
+
+# Set the global tracer provider
+trace.set_tracer_provider(tracer_provider)
+
+tracer = trace.get_tracer("ai-server.tracer")
+
 app = Flask('AI server')
+FlaskInstrumentor().instrument_app(app)
 
 # Configuration from environment variables
 DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'deepseek-coder-v2:latest')
@@ -32,7 +53,8 @@ LLAMA_CPP_CLI = os.getenv('LLAMA_CPP_CLI', '/data1/llama.cpp/bin/llama-cli')
 GGUF_DIR = os.getenv('GGUF_DIR', '/data1/GGUF')
 
 # Llama server configuration
-_llama_server_url = os.getenv('LLAMA_SERVER_URL')  # e.g., http://localhost:8080 or localhost:8080
+# e.g., http://localhost:8080 or localhost:8080
+_llama_server_url = os.getenv('LLAMA_SERVER_URL')
 LLAMA_SERVER_URL = (
     f"http://{_llama_server_url}"
     if _llama_server_url and not _llama_server_url.startswith(('http://', 'https://'))
