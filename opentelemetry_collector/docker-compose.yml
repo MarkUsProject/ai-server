@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  # OpenTelemetry Collector Contrib - Telemetry data pipeline
+  # Receives traces/metrics from Flask app, processes them, and exports to Jaeger/Prometheus
+  # Includes spanmetrics connector for generating RED metrics from traces
+  otel-collector:
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.139.0
+    container_name: otel-collector
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    command: ["--config=/etc/otelcol-config.yml"]
+    volumes:
+      # Mount our config.yml into the container
+      - ./config.yml:/etc/otelcol-config.yml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver (Flask app sends here)
+      - "4318:4318"   # OTLP HTTP receiver (alternative)
+      - "8889:8889"   # Prometheus exporter (Prometheus scrapes this)
+      - "8888:8888"   # Collector's own metrics endpoint
+    networks:
+      - monitoring
+    depends_on:
+      - jaeger
+      - prometheus
+    restart: unless-stopped
+
+  # Prometheus - Time-series metrics database
+  # Scrapes metrics from OpenTelemetry Collector and stores them
+  # Jaeger queries Prometheus to display SPM (Service Performance Monitoring) data
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"  # Web UI and API
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - monitoring
+    depends_on:
+      - alertmanager
+    restart: unless-stopped
+
+  # Alertmanager - Handles alert notifications
+  # Receives alerts from Prometheus and sends notifications
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"  # Web UI and API
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Jaeger - Distributed tracing backend and UI
+  # Receives traces from OpenTelemetry Collector via OTLP
+  # Queries Prometheus for RED metrics (Rate, Errors, Duration) to power SPM
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"  # Jaeger UI (web interface)
+      - "14317:4317"   # OTLP gRPC receiver (collector sends traces here)
+      - "14318:4318"   # OTLP HTTP receiver (alternative)
+    environment:
+      # SPM Configuration - tells Jaeger to read metrics from Prometheus
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+
+      # Metric naming configuration - must match what spanmetrics connector generates
+      - PROMETHEUS_QUERY_NAMESPACE=ai_server_traces_span_metrics
+      - PROMETHEUS_QUERY_DURATION_UNIT=ms
+
+      # Optional: Enable normalization for better metric compatibility
+      - PROMETHEUS_QUERY_NORMALIZE_CALLS=true
+      - PROMETHEUS_QUERY_NORMALIZE_DURATION=true
+
+      # Enable Monitor menu in Jaeger UI (required for SPM to show)
+      - JAEGER_DISABLED=false
+      - PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR=true
+
+      # Collector configuration (built-in OTLP receiver)
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+networks:
+  monitoring:
+    driver: bridge
+
+# USAGE INSTRUCTIONS:
+#
+# 1. Start all services:
+#    docker-compose up -d
+#
+# 2. Stop all services:
+#    docker-compose down
+#
+# 3. View logs:
+#    docker-compose logs -f [service-name]
+#    Example: docker-compose logs -f jaeger
+#
+# 4. Restart a specific service:
+#    docker-compose restart [service-name]
+#
+# 5. Check status:
+#    docker-compose ps
+#
+# ARCHITECTURE:
+#
+# Flask App (host:5000)
+#     ↓ Sends traces & metrics via OTLP to localhost:4317
+#     ↓
+# OpenTelemetry Collector (container:4317) ← All services now in Docker!
+#     ↓ Processes and routes:
+#     ├─→ Traces → Jaeger container (jaeger:4317)
+#     ├─→ spanmetrics connector (generates RED metrics from traces)
+#     └─→ Metrics → Exposed on port 8889
+#           ↓
+# Prometheus (container) scrapes otel-collector:8889
+#     ↓ Stores time-series metrics
+#     ↑
+# Jaeger queries prometheus:9090 for SPM data
+#
+# NETWORK:
+# - All containers on 'monitoring' bridge network
+# - Flask app (host) connects via localhost:4317
+#
+# ACCESS URLS:
+# - Jaeger UI: http://localhost:16686
+# - Prometheus: http://localhost:9090
+# - Alertmanager UI: http://localhost:9093
+# - OTel Collector metrics: http://localhost:8889/metrics
+# - OTel Collector health: http://localhost:8888/metrics
