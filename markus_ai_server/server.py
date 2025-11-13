@@ -31,6 +31,9 @@ logger = logging.getLogger('ai-server')
 # Load environment variables from .env file
 load_dotenv()
 
+# OpenTelemetry endpoint configuration
+OTEL_EXPORTER_OTLP_ENDPOINT = os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://localhost:4317')
+
 # Configure OpenTelemetry - Shared Resource (identifies this service)
 resource = Resource.create({"service.name": "ai-server"})
 
@@ -38,8 +41,8 @@ resource = Resource.create({"service.name": "ai-server"})
 # TracerProvider: Factory for creating tracers (for distributed tracing)
 tracer_provider = TracerProvider(resource=resource)
 
-# OTLP Trace Exporter: Sends traces to collector at localhost:4317
-otlp_trace_exporter = OTLPSpanExporter(endpoint="http://localhost:4317", insecure=True)
+# OTLP Trace Exporter: Sends traces to collector
+otlp_trace_exporter = OTLPSpanExporter(endpoint=OTEL_EXPORTER_OTLP_ENDPOINT, insecure=True)
 span_processor = BatchSpanProcessor(otlp_trace_exporter)
 tracer_provider.add_span_processor(span_processor)
 
@@ -48,8 +51,8 @@ trace.set_tracer_provider(tracer_provider)
 tracer = trace.get_tracer("ai-server.tracer")
 
 # ========== METRICS CONFIGURATION ==========
-# OTLP Metric Exporter: Sends metrics to collector at localhost:4317
-otlp_metric_exporter = OTLPMetricExporter(endpoint="http://localhost:4317", insecure=True)
+# OTLP Metric Exporter: Sends metrics to collector
+otlp_metric_exporter = OTLPMetricExporter(endpoint=OTEL_EXPORTER_OTLP_ENDPOINT, insecure=True)
 
 # PeriodicExportingMetricReader: Collects and exports metrics every 10 seconds
 metric_reader = PeriodicExportingMetricReader(
@@ -291,7 +294,7 @@ def authenticate() -> str:
 @app.route('/chat', methods=['POST'])
 def chat():
     """Handle chat request with optional llama_mode and system prompt parameters."""
-    # authenticate()
+    authenticate()
     model = request.form.get('model', DEFAULT_MODEL)
     content = request.form.get('content', '')
     llama_mode = request.form.get('llama_mode', 'cli')
