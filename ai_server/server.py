@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import glob
 import json
+import logging
 import os
 import subprocess
 from typing import Optional
@@ -13,6 +14,10 @@ from dotenv import load_dotenv
 from flask import Flask, abort, jsonify, request
 
 from .redis_helper import REDIS_CONNECTION
+
+# Configure logger
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s - %(message)s')
+logger = logging.getLogger('ai-server')
 
 # Load environment variables from .env file
 load_dotenv()
@@ -227,11 +232,15 @@ def chat_with_model(
 def authenticate() -> str:
     """Authenticate the given request using an API key."""
     api_key = request.headers.get('X-API-KEY')
+    client_ip = request.remote_addr
+    endpoint = request.path
     if not api_key:
+        logger.warning(f"Missing API key from {client_ip} at {endpoint}")
         abort(401, description="Missing API key")
 
     user = REDIS_CONNECTION.get(f"api-key:{api_key}")
     if not user:
+        logger.warning(f"Invalid API key attempt from {client_ip} at {endpoint}")
         abort(401, description="Invalid API key")
 
     return user
