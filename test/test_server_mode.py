@@ -5,7 +5,7 @@ import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 
-from ai_server.server import chat_with_llama_server_http, chat_with_model
+from markus_ai_server.server import chat_with_llama_server_http, chat_with_model
 
 # Test models
 TEST_LLAMACPP_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'
@@ -15,28 +15,28 @@ TEST_OLLAMA_MODEL = 'deepseek-coder-v2:latest'
 @pytest.fixture
 def mock_requests_post():
     """Mock requests.post for HTTP tests."""
-    with patch('ai_server.server.requests.post') as mock:
+    with patch('markus_ai_server.server.requests.post') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_llama_server_url():
     """Mock LLAMA_SERVER_URL for server tests."""
-    with patch('ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080'):
+    with patch('markus_ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080'):
         yield
 
 
 @pytest.fixture
 def mock_glob():
     """Mock glob.glob for model discovery tests."""
-    with patch('ai_server.server.glob.glob') as mock:
+    with patch('markus_ai_server.server.glob.glob') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_ollama():
     """Mock ollama.chat for fallback tests."""
-    with patch('ai_server.server.ollama.chat') as mock:
+    with patch('markus_ai_server.server.ollama.chat') as mock:
         yield mock
 
 
@@ -62,7 +62,7 @@ class TestLlamaServerHTTP:
 
     def test_chat_with_llama_server_http_no_url(self):
         """Test HTTP chat when LLAMA_SERVER_URL is not set."""
-        with patch('ai_server.server.LLAMA_SERVER_URL', None):
+        with patch('markus_ai_server.server.LLAMA_SERVER_URL', None):
             with pytest.raises(Exception, match="LLAMA_SERVER_URL environment variable not set"):
                 chat_with_llama_server_http(TEST_LLAMACPP_MODEL, 'Hello')
 
@@ -92,10 +92,10 @@ class TestServerModeRouting:
     @pytest.fixture(autouse=True)
     def setup_routing_mocks(self):
         """Set up common mocks for routing tests."""
-        with patch('ai_server.server.chat_with_llama_server_http') as mock_chat_server, patch(
-            'ai_server.server.is_llamacpp_available'
-        ) as mock_available, patch('ai_server.server.chat_with_ollama') as mock_chat_ollama, patch(
-            'ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080'
+        with patch('markus_ai_server.server.chat_with_llama_server_http') as mock_chat_server, patch(
+            'markus_ai_server.server.is_llamacpp_available'
+        ) as mock_available, patch('markus_ai_server.server.chat_with_ollama') as mock_chat_ollama, patch(
+            'markus_ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080'
         ):
             self.mock_chat_server = mock_chat_server
             self.mock_available = mock_available
@@ -158,7 +158,7 @@ class TestServerModeRouting:
 
     def test_server_mode_requires_server_url(self):
         """Test server mode requires LLAMA_SERVER_URL to be set."""
-        with patch('ai_server.server.LLAMA_SERVER_URL', None):
+        with patch('markus_ai_server.server.LLAMA_SERVER_URL', None):
             self.mock_available.return_value = True
 
             with pytest.raises(Exception, match="LLAMA_SERVER_URL environment variable not set"):
@@ -218,7 +218,7 @@ class TestServerModeIntegration:
         """
         test_schema = {"schema": {"type": "object", "properties": {"answer": {"type": "string"}}}}
 
-        with patch('ai_server.server.is_llamacpp_available', return_value=True):
+        with patch('markus_ai_server.server.is_llamacpp_available', return_value=True):
             mock_response = MagicMock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"choices": [{"message": {"content": "Schema-aware server reply"}}]}

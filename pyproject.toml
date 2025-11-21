@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 
 [project]
-name = "ai_server"
-version = "0.0.1"
+name = "markus_ai_server"
+version = "0.0.2"
 authors = [
   { name="David Liu", email="david@cs.toronto.edu" },
 ]
@@ -33,8 +33,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/MarkUsProject/ai-server"
-Issues = "https://github.com/MarkUsProject/ai-server/issues"
+Homepage = "https://github.com/MarkUsProject/markus-ai-server"
+Issues = "https://github.com/MarkUsProject/markus-ai-server/issues"
 
 [tool.black]
 line-length = 120

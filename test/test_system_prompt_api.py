@@ -19,14 +19,14 @@ class TestSystemPromptAPI:
     @pytest.fixture
     def client(self):
         """Create test client for Flask app."""
-        from ai_server.server import app
+        from markus_ai_server.server import app
 
         app.config['TESTING'] = True
         with app.test_client() as client:
             yield client
 
-    @patch('ai_server.server.REDIS_CONNECTION')
-    @patch('ai_server.server.chat_with_model')
+    @patch('markus_ai_server.server.REDIS_CONNECTION')
+    @patch('markus_ai_server.server.chat_with_model')
     def test_api_with_system_prompt(self, mock_chat, mock_redis, client):
         """Test /chat endpoint receives and passes system_prompt."""
         mock_redis.get.return_value = b'test_user'
@@ -44,8 +44,8 @@ class TestSystemPromptAPI:
             TEST_MODEL, TEST_USER_CONTENT, 'cli', TEST_SYSTEM_PROMPT, [], json_schema=None, model_options=None
         )
 
-    @patch('ai_server.server.REDIS_CONNECTION')
-    @patch('ai_server.server.chat_with_model')
+    @patch('markus_ai_server.server.REDIS_CONNECTION')
+    @patch('markus_ai_server.server.chat_with_model')
     def test_api_without_system_prompt(self, mock_chat, mock_redis, client):
         """Test /chat endpoint works without system_prompt."""
         mock_redis.get.return_value = b'test_user'
@@ -61,7 +61,7 @@ class TestSystemPromptAPI:
             TEST_MODEL, TEST_USER_CONTENT, 'cli', None, [], model_options=None, json_schema=None
         )
 
-    @patch('ai_server.server.REDIS_CONNECTION')
+    @patch('markus_ai_server.server.REDIS_CONNECTION')
     def test_api_authentication_still_required(self, mock_redis, client):
         """Test that authentication is still required with system_prompt."""
         mock_redis.get.return_value = None

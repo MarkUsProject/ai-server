@@ -1,4 +1,4 @@
-# ai-server
+# markus-ai-server
 
 ## Developers
 

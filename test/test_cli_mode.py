@@ -6,7 +6,7 @@ import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 
-from ai_server.server import chat_with_llamacpp, chat_with_model
+from markus_ai_server.server import chat_with_llamacpp, chat_with_model
 
 # Test models
 TEST_LLAMACPP_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'
@@ -16,28 +16,28 @@ TEST_OLLAMA_MODEL = 'deepseek-coder-v2:latest'
 @pytest.fixture
 def mock_subprocess():
     """Mock subprocess.run for CLI tests."""
-    with patch('ai_server.server.subprocess.run') as mock:
+    with patch('markus_ai_server.server.subprocess.run') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_resolve_model_path():
     """Mock resolve_model_path for CLI tests."""
-    with patch('ai_server.server.resolve_model_path') as mock:
+    with patch('markus_ai_server.server.resolve_model_path') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_glob():
     """Mock glob.glob for model discovery tests."""
-    with patch('ai_server.server.glob.glob') as mock:
+    with patch('markus_ai_server.server.glob.glob') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_ollama():
     """Mock ollama.chat for fallback tests."""
-    with patch('ai_server.server.ollama.chat') as mock:
+    with patch('markus_ai_server.server.ollama.chat') as mock:
         yield mock
 
 
@@ -91,9 +91,9 @@ class TestCLIModeRouting:
     @pytest.fixture(autouse=True)
     def setup_routing_mocks(self):
         """Set up common mocks for routing tests."""
-        with patch('ai_server.server.chat_with_llamacpp') as mock_chat_llamacpp, patch(
-            'ai_server.server.is_llamacpp_available'
-        ) as mock_available, patch('ai_server.server.chat_with_ollama') as mock_chat_ollama:
+        with patch('markus_ai_server.server.chat_with_llamacpp') as mock_chat_llamacpp, patch(
+            'markus_ai_server.server.is_llamacpp_available'
+        ) as mock_available, patch('markus_ai_server.server.chat_with_ollama') as mock_chat_ollama:
             self.mock_chat_llamacpp = mock_chat_llamacpp
             self.mock_available = mock_available
             self.mock_chat_ollama = mock_chat_ollama
@@ -215,8 +215,8 @@ class TestCLIModeIntegration:
         test_schema = {"schema": {"type": "object", "properties": {"answer": {"type": "string"}}}}
 
         #  Prepare mocks
-        with patch('ai_server.server.is_llamacpp_available', return_value=False), patch(
-            'ai_server.server.chat_with_ollama'
+        with patch('markus_ai_server.server.is_llamacpp_available', return_value=False), patch(
+            'markus_ai_server.server.chat_with_ollama'
         ) as mock_ollama:
             mock_ollama.return_value = "schema-aware response"
 
