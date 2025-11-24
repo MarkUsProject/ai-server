@@ -24,6 +24,9 @@ dependencies = [
     "python-dotenv",
     "redis",
     "requests",
+    "opentelemetry-instrumentation-flask",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-grpc",
 ]
 
 [project.optional-dependencies]
