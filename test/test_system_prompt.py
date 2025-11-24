@@ -15,11 +15,11 @@ class TestSystemPromptCore:
         """Set up environment variables for each test."""
         monkeypatch.setenv('REDIS_URL', 'redis://localhost:6379')
 
-    @patch('ai_server.server.subprocess.run')
-    @patch('ai_server.server.resolve_model_path')
+    @patch('markus_ai_server.server.subprocess.run')
+    @patch('markus_ai_server.server.resolve_model_path')
     def test_llamacpp_cli_with_system_prompt(self, mock_resolve, mock_subprocess):
         """Test system_prompt passed to llama.cpp CLI."""
-        from ai_server.server import chat_with_llamacpp
+        from markus_ai_server.server import chat_with_llamacpp
 
         mock_resolve.return_value = f'/data1/GGUF/{TEST_MODEL}/{TEST_MODEL}.gguf'
         mock_result = MagicMock()
@@ -33,11 +33,11 @@ class TestSystemPromptCore:
         assert '--system-prompt' in cmd
         assert TEST_SYSTEM_PROMPT in cmd
 
-    @patch('ai_server.server.requests.post')
-    @patch('ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080')
+    @patch('markus_ai_server.server.requests.post')
+    @patch('markus_ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080')
     def test_llama_server_http_with_system_prompt(self, mock_post):
         """Test system_prompt passed to llama-server HTTP."""
-        from ai_server.server import chat_with_llama_server_http
+        from markus_ai_server.server import chat_with_llama_server_http
 
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -51,10 +51,10 @@ class TestSystemPromptCore:
         assert messages[0]['role'] == 'system'
         assert messages[0]['content'] == TEST_SYSTEM_PROMPT
 
-    @patch('ai_server.server.ollama.chat')
+    @patch('markus_ai_server.server.ollama.chat')
     def test_ollama_with_system_prompt(self, mock_ollama):
         """Test system_prompt passed to ollama."""
-        from ai_server.server import chat_with_ollama
+        from markus_ai_server.server import chat_with_ollama
 
         mock_response = MagicMock()
         mock_response.message.content = "result"
@@ -67,11 +67,11 @@ class TestSystemPromptCore:
         assert messages[0]['role'] == 'system'
         assert messages[0]['content'] == TEST_SYSTEM_PROMPT
 
-    @patch('ai_server.server.chat_with_llamacpp')
-    @patch('ai_server.server.is_llamacpp_available')
+    @patch('markus_ai_server.server.chat_with_llamacpp')
+    @patch('markus_ai_server.server.is_llamacpp_available')
     def test_chat_with_model_routing(self, mock_available, mock_chat):
         """Test system_prompt passed through chat_with_model routing."""
-        from ai_server.server import chat_with_model
+        from markus_ai_server.server import chat_with_model
 
         mock_available.return_value = True
         mock_chat.return_value = "result"

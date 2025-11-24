@@ -5,7 +5,11 @@ import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 
-from ai_server.server import chat_with_ollama, is_llamacpp_available, resolve_model_path
+from markus_ai_server.server import (
+    chat_with_ollama,
+    is_llamacpp_available,
+    resolve_model_path,
+)
 
 # Test models
 TEST_LLAMACPP_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'
@@ -15,14 +19,14 @@ TEST_OLLAMA_MODEL = 'deepseek-coder-v2:latest'
 @pytest.fixture
 def mock_glob():
     """Mock glob.glob for model discovery tests."""
-    with patch('ai_server.server.glob.glob') as mock:
+    with patch('markus_ai_server.server.glob.glob') as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_ollama():
     """Mock ollama.chat for ollama tests."""
-    with patch('ai_server.server.ollama.chat') as mock:
+    with patch('markus_ai_server.server.ollama.chat') as mock:
         yield mock
 
 
@@ -49,7 +53,7 @@ class TestModelResolution:
 
     def test_is_llamacpp_available_true(self):
         """Test model availability check when model exists."""
-        with patch('ai_server.server.resolve_model_path') as mock_resolve:
+        with patch('markus_ai_server.server.resolve_model_path') as mock_resolve:
             mock_resolve.return_value = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
 
             result = is_llamacpp_available(TEST_LLAMACPP_MODEL)
@@ -59,7 +63,7 @@ class TestModelResolution:
 
     def test_is_llamacpp_available_false(self):
         """Test model availability check when model doesn't exist."""
-        with patch('ai_server.server.resolve_model_path') as mock_resolve:
+        with patch('markus_ai_server.server.resolve_model_path') as mock_resolve:
             mock_resolve.return_value = None
 
             result = is_llamacpp_available('nonexistent-model')
