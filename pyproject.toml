@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "markus_ai_server"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="David Liu", email="david@cs.toronto.edu" },
 ]
@@ -36,9 +36,15 @@ dev = [
 Homepage = "https://github.com/MarkUsProject/markus-ai-server"
 Issues = "https://github.com/MarkUsProject/markus-ai-server/issues"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/markus_ai_server"]
+
 [tool.black]
 line-length = 120
 skip-string-normalization = true
 
 [tool.isort]
 profile = "black"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
