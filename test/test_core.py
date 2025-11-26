@@ -5,7 +5,7 @@ import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 
-from src.markus_ai_server.server import (
+from markus_ai_server.server import (
     chat_with_ollama,
     is_llamacpp_available,
     resolve_model_path,

@@ -18,7 +18,7 @@ class TestSystemPromptAPI:
     @pytest.fixture
     def client(self):
         """Create test client for Flask app."""
-        from src.markus_ai_server.server import app
+        from markus_ai_server.server import app
 
         app.config['TESTING'] = True
         with app.test_client() as client:
