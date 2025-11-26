@@ -36,6 +36,9 @@ dev = [
 Homepage = "https://github.com/MarkUsProject/markus-ai-server"
 Issues = "https://github.com/MarkUsProject/markus-ai-server/issues"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/markus_ai_server"]
+
 [tool.black]
 line-length = 120
 skip-string-normalization = true

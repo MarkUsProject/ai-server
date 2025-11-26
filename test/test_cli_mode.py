@@ -6,7 +6,7 @@ import pytest
 
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 
-from markus_ai_server.server import chat_with_llamacpp, chat_with_model
+from src.markus_ai_server.server import chat_with_llamacpp, chat_with_model
 
 # Test models
 TEST_LLAMACPP_MODEL = 'DeepSeek-V3-0324-UD-IQ2_XXS'
