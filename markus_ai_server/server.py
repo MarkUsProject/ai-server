@@ -148,7 +148,7 @@ def chat_with_ollama(
         'eval_duration': response.eval_duration,
         'prompt_eval_duration': response.prompt_eval_duration,
         'eval_count': response.eval_count,
-        'prompt_eval_count': response.eval_count
+        'prompt_eval_count': response.prompt_eval_count
     }
 
     logger.info(f'chat_with_ollama done: {done_log_data}')
