@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -35,13 +36,13 @@ class TestModelResolution:
 
     def test_resolve_model_path_found(self, mock_glob):
         """Test model path resolution when model exists."""
-        model_path = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
+        model_path = str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'))
         mock_glob.return_value = [model_path]
 
         result = resolve_model_path(TEST_LLAMACPP_MODEL)
 
         assert result == model_path
-        mock_glob.assert_called_once_with(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/*.gguf')
+        mock_glob.assert_called_once_with(str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/*.gguf')))
 
     def test_resolve_model_path_not_found(self, mock_glob):
         """Test model path resolution when model doesn't exist."""
@@ -54,7 +55,7 @@ class TestModelResolution:
     def test_is_llamacpp_available_true(self):
         """Test model availability check when model exists."""
         with patch('markus_ai_server.server.resolve_model_path') as mock_resolve:
-            mock_resolve.return_value = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
+            mock_resolve.return_value = str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'))
 
             result = is_llamacpp_available(TEST_LLAMACPP_MODEL)
 
