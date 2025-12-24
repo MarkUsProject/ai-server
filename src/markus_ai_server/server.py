@@ -78,9 +78,7 @@ def chat_with_llama_server_http(
         if 'stream' not in payload:
             payload['stream'] = False
 
-        start_log_data = {
-            'model': model
-        }
+        start_log_data = {'model': model}
         logger.info(f'chat_with_llama_server_http starting: {start_log_data}')
         response = requests.post(
             f'{LLAMA_SERVER_URL}/v1/chat/completions',
@@ -89,10 +87,7 @@ def chat_with_llama_server_http(
             timeout=timeout,
         )
 
-        done_log_data = {
-            'model': model,
-            'response_status_code': response.status_code
-        }
+        done_log_data = {'model': model, 'response_status_code': response.status_code}
         logger.info(f'chat_with_llama_server_http done: {start_log_data}')
         if response.status_code == 200:
             data = response.json()
@@ -132,9 +127,7 @@ def chat_with_ollama(
     """Handle chat using ollama."""
     messages = _build_messages(content, system_prompt, image_files)
 
-    start_log_data = {
-        'model': model
-    }
+    start_log_data = {'model': model}
     logger.info(f'chat_with_ollama starting: {start_log_data}')
     response = ollama.chat(
         model=model,
@@ -148,7 +141,7 @@ def chat_with_ollama(
         'eval_duration': response.eval_duration,
         'prompt_eval_duration': response.prompt_eval_duration,
         'eval_count': response.eval_count,
-        'prompt_eval_count': response.prompt_eval_count
+        'prompt_eval_count': response.prompt_eval_count,
     }
 
     logger.info(f'chat_with_ollama done: {done_log_data}')
@@ -187,9 +180,7 @@ def chat_with_llamacpp(
         pass  # TODO: pass image files
 
     try:
-        start_log_data = {
-            'model': model
-        }
+        start_log_data = {'model': model}
         logger.info(f'chat_with_llamacpp starting: {start_log_data}')
         result = subprocess.run(cmd, capture_output=True, text=False, timeout=timeout, check=True)
         logger.info(f'chat_with_llamacpp done: {start_log_data}')
