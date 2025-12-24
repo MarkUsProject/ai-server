@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import subprocess
+from pathlib import Path
 from typing import Optional
 
 import ollama
@@ -28,8 +29,8 @@ app = Flask('AI server')
 DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'deepseek-coder-v2:latest')
 
 # Llama.cpp configuration
-LLAMA_CPP_CLI = os.getenv('LLAMA_CPP_CLI', '/data1/llama.cpp/bin/llama-cli')
-GGUF_DIR = os.getenv('GGUF_DIR', '/data1/GGUF')
+LLAMA_CPP_CLI = os.getenv('LLAMA_CPP_CLI', str(Path('/data1/llama.cpp/bin/llama-cli')))
+GGUF_DIR = os.getenv('GGUF_DIR', str(Path('/data1/GGUF')))
 
 # Llama server configuration
 _llama_server_url = os.getenv('LLAMA_SERVER_URL')  # e.g., http://localhost:8080 or localhost:8080

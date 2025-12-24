@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -92,10 +93,11 @@ class TestServerModeRouting:
     @pytest.fixture(autouse=True)
     def setup_routing_mocks(self):
         """Set up common mocks for routing tests."""
-        with patch('markus_ai_server.server.chat_with_llama_server_http') as mock_chat_server, patch(
-            'markus_ai_server.server.is_llamacpp_available'
-        ) as mock_available, patch('markus_ai_server.server.chat_with_ollama') as mock_chat_ollama, patch(
-            'markus_ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080'
+        with (
+            patch('markus_ai_server.server.chat_with_llama_server_http') as mock_chat_server,
+            patch('markus_ai_server.server.is_llamacpp_available') as mock_available,
+            patch('markus_ai_server.server.chat_with_ollama') as mock_chat_ollama,
+            patch('markus_ai_server.server.LLAMA_SERVER_URL', 'http://localhost:8080'),
         ):
             self.mock_chat_server = mock_chat_server
             self.mock_available = mock_available
@@ -177,7 +179,7 @@ class TestServerModeIntegration:
 
     def test_complete_server_flow_with_real_model(self, mock_glob, mock_requests_post, mock_llama_server_url):
         """Test complete server flow: model resolution → HTTP API call."""
-        model_path = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
+        model_path = str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'))
 
         # Mock model found (only checked once for availability in server mode)
         mock_glob.return_value = [model_path]
@@ -192,7 +194,7 @@ class TestServerModeIntegration:
 
         assert result == "Server integration test successful!"
         # In server mode, glob.glob only called once for is_llamacpp_available
-        mock_glob.assert_called_once_with(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/*.gguf')
+        mock_glob.assert_called_once_with(str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/*.gguf')))
         mock_requests_post.assert_called_once()
 
     def test_complete_server_fallback_flow_to_ollama(self, mock_glob, mock_ollama, mock_llama_server_url):
@@ -208,7 +210,7 @@ class TestServerModeIntegration:
         result = chat_with_model(TEST_OLLAMA_MODEL, 'Fallback test', llama_mode='server')
 
         assert result == "Ollama server fallback integration test successful!"
-        mock_glob.assert_called_once_with(f'/data1/GGUF/{TEST_OLLAMA_MODEL}/*.gguf')
+        mock_glob.assert_called_once_with(str(Path(f'/data1/GGUF/{TEST_OLLAMA_MODEL}/*.gguf')))
         mock_ollama.assert_called_once()
 
     def test_server_mode_passes_json_schema_to_llama_server(self, tmp_path, mock_requests_post, mock_llama_server_url):

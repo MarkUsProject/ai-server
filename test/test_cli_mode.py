@@ -1,5 +1,6 @@
 import os
 import subprocess
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -46,7 +47,7 @@ class TestLlamaCppCLI:
 
     def test_chat_with_llamacpp_success(self, mock_resolve_model_path, mock_subprocess):
         """Test successful CLI chat with llama.cpp."""
-        model_path = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
+        model_path = str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'))
         mock_resolve_model_path.return_value = model_path
 
         mock_result = MagicMock()
@@ -61,7 +62,7 @@ class TestLlamaCppCLI:
         # Verify correct CLI command structure
         args, kwargs = mock_subprocess.call_args
         cmd = args[0]
-        assert '/data1/llama.cpp/bin/llama-cli' in cmd
+        assert str(Path('/data1/llama.cpp/bin/llama-cli')) in cmd
         assert '-m' in cmd and model_path in cmd
         assert '--n-gpu-layers' in cmd and '40' in cmd
         assert '--single-turn' in cmd
@@ -75,7 +76,9 @@ class TestLlamaCppCLI:
 
     def test_chat_with_llamacpp_subprocess_error(self, mock_resolve_model_path, mock_subprocess):
         """Test CLI chat when subprocess fails."""
-        mock_resolve_model_path.return_value = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
+        mock_resolve_model_path.return_value = str(
+            Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf')
+        )
 
         error = subprocess.CalledProcessError(1, 'cmd')
         error.stderr = b'CUDA out of memory'
@@ -91,9 +94,11 @@ class TestCLIModeRouting:
     @pytest.fixture(autouse=True)
     def setup_routing_mocks(self):
         """Set up common mocks for routing tests."""
-        with patch('markus_ai_server.server.chat_with_llamacpp') as mock_chat_llamacpp, patch(
-            'markus_ai_server.server.is_llamacpp_available'
-        ) as mock_available, patch('markus_ai_server.server.chat_with_ollama') as mock_chat_ollama:
+        with (
+            patch('markus_ai_server.server.chat_with_llamacpp') as mock_chat_llamacpp,
+            patch('markus_ai_server.server.is_llamacpp_available') as mock_available,
+            patch('markus_ai_server.server.chat_with_ollama') as mock_chat_ollama,
+        ):
             self.mock_chat_llamacpp = mock_chat_llamacpp
             self.mock_available = mock_available
             self.mock_chat_ollama = mock_chat_ollama
@@ -177,7 +182,7 @@ class TestCLIModeIntegration:
 
     def test_complete_cli_flow_with_real_model(self, mock_glob, mock_subprocess):
         """Test complete CLI flow: model resolution → CLI execution."""
-        model_path = f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'
+        model_path = str(Path(f'/data1/GGUF/{TEST_LLAMACPP_MODEL}/{TEST_LLAMACPP_MODEL}.gguf'))
 
         mock_glob.return_value = [model_path]
         mock_result = MagicMock()
@@ -204,7 +209,7 @@ class TestCLIModeIntegration:
         result = chat_with_model(TEST_OLLAMA_MODEL, 'Fallback test', llama_mode='cli')
 
         assert result == "Ollama CLI fallback integration test successful!"
-        mock_glob.assert_called_once_with(f'/data1/GGUF/{TEST_OLLAMA_MODEL}/*.gguf')
+        mock_glob.assert_called_once_with(str(Path(f'/data1/GGUF/{TEST_OLLAMA_MODEL}/*.gguf')))
         mock_ollama.assert_called_once()
 
     def test_cli_mode_passes_json_schema_to_ollama(self, tmp_path):
@@ -215,9 +220,10 @@ class TestCLIModeIntegration:
         test_schema = {"schema": {"type": "object", "properties": {"answer": {"type": "string"}}}}
 
         #  Prepare mocks
-        with patch('markus_ai_server.server.is_llamacpp_available', return_value=False), patch(
-            'markus_ai_server.server.chat_with_ollama'
-        ) as mock_ollama:
+        with (
+            patch('markus_ai_server.server.is_llamacpp_available', return_value=False),
+            patch('markus_ai_server.server.chat_with_ollama') as mock_ollama,
+        ):
             mock_ollama.return_value = "schema-aware response"
 
             result = chat_with_model(TEST_OLLAMA_MODEL, "Give me an answer", llama_mode='cli', json_schema=test_schema)
